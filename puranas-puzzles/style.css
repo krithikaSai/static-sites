@@ -132,27 +132,23 @@ button {
 }
 
 
-/* RESPONSIVE FLOWCHART SCALING */
-@media (max-width: 900px) {
-    .flowchart {
-        transform: scale(0.85);
+.flowchart {
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 20px;
+}
+
+.container {
+    overflow-x: auto;
+}
+
+@media (max-width: 480px) {
+    .node {
+        width: 180px;
+    }
+
+    .node.wide {
+        width: 240px;
     }
 }
 
-@media (max-width: 700px) {
-    .flowchart {
-        transform: scale(0.75);
-    }
-}
-
-@media (max-width: 550px) {
-    .flowchart {
-        transform: scale(0.65);
-    }
-}
-
-@media (max-width: 430px) {
-    .flowchart {
-        transform: scale(0.55);
-    }
-}
