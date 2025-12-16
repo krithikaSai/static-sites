@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Congratulations</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      background-image:
+        url("assets/images/stars.jpg"),
+        radial-gradient(circle at 50% 30%, #111 0%, #000 70%);
+      background-size: cover;
+      background-attachment: fixed;
+      color: white;
+      font-family: "Inter", sans-serif;
+      overflow-x: hidden;
+    }
+
+    .container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 44px;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+
+    p {
+      max-width: 640px;
+      font-size: 18px;
+      line-height: 1.6;
+      color: #d8d8d8;
+      margin-bottom: 40px;
+    }
+
+    .stories-img {
+      max-width: 520px;
+      width: 100%;
+      margin-bottom: 40px;
+      border-radius: 12px;
+      opacity: 0.85;
+      box-shadow: 0 0 18px rgba(255, 220, 150, 0.25);
+    }
+
+    .back-btn {
+      padding: 12px 26px;
+      font-size: 16px;
+      background: #222;
+      border: 2px solid #000;
+      border-radius: 16px;
+      color: #000;
+      cursor: pointer;
+      font-weight: bold;
+      letter-spacing: 1px;
+      background-image: url("assets/images/stone-texture.png");
+      background-size: cover;
+      box-shadow:
+        inset 0 0 12px rgba(255, 230, 150, 0.3),
+        0 0 12px rgba(255, 215, 0, 0.2);
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    .back-btn:hover {
+      transform: scale(1.05);
+      box-shadow:
+        inset 0 0 16px rgba(255, 235, 180, 0.5),
+        0 0 20px rgba(255, 210, 80, 0.4);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <img src="assets/images/stories.jpg" alt="Stories" class="stories-img">
+
+    <h1>You Have Walked Through all the Stories</h1>
+
+    <p> <b>
+      From gods and sages to curses, boons, and rebirths,<br>
+      you followed the stories that shaped the world.<br><br>
+      The puzzles end here.<br>
+      The journey through the sacred continues.
+    </p> </b>
+
+    <button class="back-btn" onclick="window.location.href='index.html'">
+      Return to Start
+    </button>
+
+  </div>
+
+</body>
+</html>
