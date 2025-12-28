@@ -491,7 +491,7 @@ function loadPuzzle(puzzle) {
 
     // set grid template columns/rows using repeat
     // each cell uses a min width so grid is responsive; CSS handles scaling
-    grid.style.gridTemplateColumns = `repeat(${cols}, minmax(180px, 1fr))`;
+    grid.style.gridTemplateColumns = `repeat(${cols}, 240px)`;
     const rowH = puzzle.rowHeight || CELL_H;
     grid.style.gridAutoRows = `${rowH}px`;
 
