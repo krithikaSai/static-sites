@@ -721,6 +721,7 @@ function showCongratsPopup(puzzle) {
 </p>
         <div style="margin-top:12px;">
           <button id="modal-next" style="padding:8px 12px; cursor:pointer;">Next puzzle</button>
+          ${puzzle.trivia ? `<button id="modal-trivia" style="margin-left:10px; padding:8px 12px; cursor:pointer;">I want to know more</button>` : ''}
           <button id="modal-close" style="margin-left:10px; padding:8px 12px; cursor:pointer;">Close</button>
         </div>
       </div>
@@ -732,6 +733,34 @@ function showCongratsPopup(puzzle) {
     document.getElementById('modal-close').addEventListener('click', () => {
         modal.remove();
     });
+    if (puzzle.trivia) {
+        document.getElementById('modal-trivia').addEventListener('click', () => {
+            const box = modal.querySelector('div');
+            box.innerHTML = `
+                <h2 style="margin:0 0 12px 0; color:${accent};">📖 Did you know?</h2>
+                <div style="color:#ddd; text-align:left; max-height:60vh; overflow-y:auto; line-height:1.7; font-size:15px;">
+                    ${puzzle.trivia}
+                </div>
+                <div style="margin-top:16px;">
+                    <button id="trivia-next" style="padding:8px 12px; cursor:pointer;">Next puzzle</button>
+                    <button id="trivia-close" style="margin-left:10px; padding:8px 12px; cursor:pointer;">Close</button>
+                </div>
+            `;
+
+            document.getElementById('trivia-close').addEventListener('click', () => modal.remove());
+
+            const triviaNext = document.getElementById('trivia-next');
+            if (puzzle.nextSlug === "end") {
+                triviaNext.textContent = "Finish";
+                triviaNext.addEventListener('click', () => setTimeout(() => window.location.href = "end.html", 220));
+            } else if (puzzle.nextSlug) {
+                triviaNext.addEventListener('click', () => setTimeout(() => window.location.href = `puzzle.html?slug=${puzzle.nextSlug}`, 220));
+            } else {
+                triviaNext.textContent = "Main menu";
+                triviaNext.addEventListener('click', () => setTimeout(() => window.location.href = "index.html", 220));
+            }
+        });
+    }
 
     const nextBtn = document.getElementById('modal-next');
 
