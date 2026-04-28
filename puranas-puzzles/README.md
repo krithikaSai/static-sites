@@ -2,7 +2,7 @@
 
 This is a passion project with 108 puzzles. Each puzzle maps out a web of characters, relationships, and events from different Puranas. Solve them, use hints when you're stuck, and read the story behind each puzzle once you're done.
 <!-- GIF: Intro -->
-![Intro](gifs/intro.gif)
+![Intro](/static-sites/puranas-puzzles/gifs/intro.gif)
 
 **▶ [Play it here](https://krithikasai.github.io/static-sites/puranas-puzzles/)**
 
@@ -15,7 +15,7 @@ This is a passion project with 108 puzzles. Each puzzle maps out a web of charac
 Each node in the flowchart contains a **letter pattern** showing you how many letters the answer has, **clue** describing who the character is or what they did, and a **Check** button to confirm whether your answer is correct. 
 
 <!-- GIF: solving a node — typing an answer and clicking Check -->
-![Solving a puzzle](gifs/solving.gif)
+![Intro](/static-sites/puranas-puzzles/gifs/solving.gif)
 
 ---
 
@@ -24,7 +24,7 @@ Each node in the flowchart contains a **letter pattern** showing you how many le
 If you're stuck, click the **Hint** button on any node. You can click it any number of times, it will reveal each alphabet of the answer one by one.
 
 <!-- GIF: clicking Hint a couple of times to reveal letters -->
-![Using hints](gifs/hints.gif)
+![Intro](/static-sites/puranas-puzzles/gifs/hints.gif)
 
 ---
 
@@ -33,7 +33,7 @@ If you're stuck, click the **Hint** button on any node. You can click it any num
 After solving all the nodes of a puzzle and submitting, you can either move on to the next puzzle, or click the **"I want to know more"** button if you wish to know the story in more depth.
 
 <!-- GIF: clicking "I want to know more" and scrolling through the story -->
-![Reading the story](gifs/trivia.gif)
+![Intro](/static-sites/puranas-puzzles/gifs/trivia.gif)
 
 ---
 
@@ -42,7 +42,7 @@ After solving all the nodes of a puzzle and submitting, you can either move on t
 There's a **☰ tab** pinned to the left edge of the screen at all times. If you're not interested in solving all the puzzles, you can click on any one in the list to jump straight to it.
 
 <!-- GIF: opening the sidebar, scrolling through it, clicking a puzzle -->
-![Navigating puzzles](gifs/navigation.gif)
+![Intro](/static-sites/puranas-puzzles/gifs/navigation.gif)
 
 ---
 
@@ -51,7 +51,7 @@ There's a **☰ tab** pinned to the left edge of the screen at all times. If you
 There's a **💬 Feedback** button fixed to the bottom right corner of every page. You can use it to share any thoughts or feedback.
 
 <!-- GIF: clicking the feedback button, filling in the form, clicking Send -->
-![Sending feedback](gifs/feedback.gif)
+![Intro](/static-sites/puranas-puzzles/gifs/feedback.gif)
 
 
 ---
