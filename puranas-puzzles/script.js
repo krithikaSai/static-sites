@@ -5,8 +5,13 @@
 
 /* ----------------- Existing logic (kept mostly unchanged) ----------------- */
 
+// Tracks how many hints have been used for each puzzle node.
+// Keys are node IDs, values are the count of hints revealed so far.
 const hintProgress = {}; // tracks how many hints used per node
 
+// Renders the letter boxes for a given node based on its pattern string.
+// Each character in the pattern is either a fixed letter (shown immediately)
+// or an underscore "_" (shown as a blank box the user needs to fill in).
 function renderLetterBoxes(nid, pattern) {
     const row = document.getElementById(`letters-${nid}`);
     if (!row) return;
@@ -29,6 +34,11 @@ function renderLetterBoxes(nid, pattern) {
     }
 }
 
+// Updates the visual letter boxes in real-time as the user types in the input field.
+// Carefully skips over fixed letters in the pattern so the user's typed characters
+// only fill in the blank (underscore) positions — not the pre-filled ones.
+// Also calls refreshSubmitButtonState() after every keystroke to check
+// whether all blanks are now filled (to potentially enable the Submit button).
 /* Proper live-fill that correctly aligns with fixed letters */
 function updateFilledPattern(nid) {
     const inputEl = document.getElementById(`input-${nid}`);
@@ -59,6 +69,10 @@ function updateFilledPattern(nid) {
     refreshSubmitButtonState();
 }
 
+// Checks if the user's answer for a specific node is correct.
+// Compares the trimmed, lowercased input against the node's stored answer.
+// Shows "Correct!" in green or "Incorrect." in red in the result box,
+// and triggers a CSS animation on the node card for visual feedback.
 /* Check answer */
 function check(pid, nid) {
     const puzzle = puzzles.find(x => x.id === pid);
@@ -68,14 +82,16 @@ function check(pid, nid) {
     if (!inputEl) return;
     const userInput = inputEl.value.trim().toLowerCase();
 
-    const correct = node.answer.toLowerCase();
+    const correct = Array.isArray(node.answer)
+    ? node.answer.map(a => a.toLowerCase())
+    : [node.answer.toLowerCase()];
     const box = document.getElementById(`result-${nid}`);
     const nodeBox = document.getElementById(`node-${nid}`);
 
     // Remove previous animations
     nodeBox.classList.remove("correct-anim", "incorrect-anim");
 
-    if (userInput === correct) {
+    if (correct.includes(userInput)) {
         box.textContent = "Correct!";
         box.style.color = "#00ff66";
 
@@ -93,6 +109,11 @@ function check(pid, nid) {
     }
 }
 
+// Reveals one letter of the answer at a time as a hint.
+// Keeps track of how many hints have been used (via hintProgress),
+// and reveals the next letter each time the user clicks the Hint button.
+// Once all letters have been revealed, it shows "No more hints."
+// Also updates the Hint button label to show which hint number comes next.
 /* Simple hint */
 function hint(pid, nid) {
     const puzzle = puzzles.find(x => x.id === pid);
@@ -103,7 +124,7 @@ function hint(pid, nid) {
         hintProgress[nid] = 0;
     }
 
-    const answer = node.answer.toUpperCase();
+    const answer = (Array.isArray(node.answer) ? node.answer[0] : node.answer).toUpperCase();
     const idx = hintProgress[nid];
 
     const hintBox = document.getElementById(`result-${nid}`);
@@ -131,6 +152,9 @@ function hint(pid, nid) {
     }
 }
 
+// Converts a number into its English ordinal word.
+// Used by the hint function to say "The first letter is...", "The second letter is...", etc.
+// Handles 1, 2, 3 explicitly, then falls back to "Nth" for everything else.
 function ordinal(n) {
     if (n === 1) return "first";
     if (n === 2) return "second";
@@ -140,17 +164,26 @@ function ordinal(n) {
 
 /* ----------------- New dynamic flowchart + utility logic ----------------- */
 
+// These constants define the approximate pixel size of each cell in the puzzle grid.
+// They're used as reference points when computing SVG connector coordinates.
+// Actual visual sizing is handled by CSS (responsive scaling).
 /* Grid cell size (px) - used to compute coordinates for SVG; responsive scaling handled by CSS */
 const CELL_W = 260; // approximate width per grid column
 const CELL_H = 200; // approximate height per grid row
 const FLOWCHART_ID = "flowchart";
 
+// Reads a specific query parameter from the current URL.
+// For example, if the URL is puzzle.html?slug=rama, calling getQueryParam("slug") returns "rama".
+// Used to figure out which puzzle to load on page open.
 /* Helper: read ?slug=... */
 function getQueryParam(name) {
     const url = new URL(window.location.href);
     return url.searchParams.get(name);
 }
 
+// Decides whether text on top of the accent color should be black or white.
+// Converts the hex color to its RGB values, then calculates perceived brightness
+// using a standard luminance formula. Light backgrounds get black text, dark get white.
 /* Compute readable foreground (black or white) for an accent color */
 function pickForeground(hex) {
     try {
@@ -168,6 +201,12 @@ function pickForeground(hex) {
     }
 }
 
+
+// Creates a single SVG element that sits as a transparent overlay on top of the
+// flowchart container. This SVG is where all the arrows/connector lines between
+// nodes are drawn. If an SVG already exists from a previous render, it is reused
+// but cleared of all its old paths. Also injects an arrowhead marker definition
+// so paths can end with a visible arrow tip.
 /* Create the SVG container used for connectors (one-per-page) */
 function createOrResetSVG(container) {
     let svg = container.querySelector('svg.flow-svg');
@@ -198,6 +237,9 @@ function createOrResetSVG(container) {
     return svg;
 }
 
+// Given a DOM element's bounding rectangle and the container's bounding rectangle,
+// returns the exact pixel coordinate (x, y) of the requested side (left, right, top, or bottom).
+// This is used to determine where exactly a connector line should start or end on a node.
 /* ===========================================================
    UNIVERSAL SIDE-POINT EXTRACTOR
    =========================================================== */
@@ -231,6 +273,22 @@ function getSidePoint(rect, containerRect, side) {
 }
 
 
+// The main connector-drawing function. Draws either a straight line or a curved
+// bezier path between two node elements in the SVG overlay.
+//
+// How it works, step by step:
+//   1. Determines the start point (p1) and end point (p2) for the line.
+//      If sideOrigin / sideTarget are specified in options, those exact sides are used.
+//      Otherwise it falls back to smart defaults: if both nodes are on the same row,
+//      it connects right-side to left-side; if they're on different rows, bottom to top.
+//   2. If options.straight is true, draws a plain <line> element instead of a curve.
+//      Optionally adds an arrowhead and/or a text label at the midpoint.
+//   3. For curved mode, calculates two cubic bezier control points (cx1/cy1 and cx2/cy2).
+//      An angleBias option lets you push the curve left or right.
+//   4. If avoidNode is set, pushes the control points far to the right to route
+//      the connector around a node that would otherwise overlap the path.
+//   5. Appends the final <path> element to the SVG.
+//   6. Optionally draws a text label near the midpoint of the curve.
 /* ===========================================================
    CLEAN DRAW CURVED OR STRAIGHT CONNECTOR
    =========================================================== */
@@ -421,6 +479,20 @@ function drawCurvedPath(svg, fromRect, toRect, options = {}) {
     }
 }
 
+// The core function that takes a puzzle object and renders the entire puzzle UI.
+// Here's everything it does in order:
+//   - Sets the page title, description, and accent theme color.
+//   - Resets hint progress from any previous puzzle.
+//   - Clears the flowchart container and builds a fresh CSS grid inside it.
+//   - Reads node positions from puzzle.layout (or falls back to a simple left-to-right row).
+//   - Calculates grid dimensions (columns and rows) from the min/max of all positions.
+//   - For each puzzle node, creates a <div> card and places it at the correct grid cell.
+//     Image nodes get an <img> tag; puzzle nodes get letter boxes, clue text, input, buttons.
+//   - Appends the SVG overlay for drawing connectors.
+//   - After the browser has finished layout (via requestAnimationFrame), reads the
+//     actual pixel positions of each node and draws the connector arrows between them.
+//   - Wires up all input, Check, and Hint button event listeners.
+//   - Creates the Submit and Next buttons below the grid.
 /* Build DOM nodes + grid and connections from puzzle data */
 function loadPuzzle(puzzle) {
     // Set title
@@ -613,6 +685,14 @@ else {
 
 /* ----------------- Submit / confetti / sound / next puzzle ----------------- */
 
+// Creates the Submit and Next/Skip buttons and appends them below the puzzle grid.
+// The Submit button starts disabled — it only enables once all blank letter boxes
+// are filled in (checked live via refreshSubmitButtonState).
+// The Next button skips to the next puzzle immediately without requiring a correct submission.
+// Navigation after clicking uses puzzle.nextSlug to determine the destination:
+//   - "end" → end.html
+//   - a slug string → puzzle.html?slug=<nextSlug>
+//   - nothing → index.html (main menu)
 function createSubmitButton(puzzle) {
     const existing = document.getElementById('submit-area');
     if (existing) existing.remove();
@@ -630,9 +710,11 @@ function createSubmitButton(puzzle) {
     btn.id = 'submit-all';
     btn.textContent = 'Submit';
     btn.disabled = true;
+    btn.title = 'Fill in all the boxes before submitting!';
     btn.style.padding = '10px 18px';
     btn.style.fontSize = '16px';
     btn.style.cursor = 'pointer';
+    btn.style.position = 'relative';
 
     // Next / Skip button
     const skip = document.createElement('button');
@@ -666,13 +748,18 @@ function createSubmitButton(puzzle) {
     refreshSubmitButtonState();
 }
 
-
+// Checks whether the Submit button should be enabled or disabled.
+// Calls areAllNodesFilled() and sets the button's disabled state accordingly.
+// Called every time the user types something into any input field.
 function refreshSubmitButtonState() {
     const btn = document.getElementById('submit-all');
     if (!btn) return;
     btn.disabled = !areAllNodesFilled();
 }
 
+// Checks if every blank letter box (the ones the user needs to fill) has a character in it.
+// Returns true if all blanks are filled, false if any are still empty.
+// If there are no blank boxes at all (e.g. image-only puzzles), returns true by default.
 function areAllNodesFilled() {
     const blanks = document.querySelectorAll('.letter-box.blank-letter');
     if (blanks.length === 0) return true;
@@ -682,6 +769,10 @@ function areAllNodesFilled() {
     return true;
 }
 
+// Called when the user clicks Submit.
+// Triggers the confetti animation, marks this puzzle as solved in localStorage
+// (so the sidebar can show it as completed on future visits), and shows the
+// congratulations popup modal.
 function onSubmitAll(puzzle) {
     // small pop
 
@@ -695,6 +786,8 @@ function onSubmitAll(puzzle) {
     showCongratsPopup(puzzle);
 }
 
+// Fires a confetti burst animation using the canvas-confetti library (if it's loaded).
+// The confetti explodes from roughly the middle of the screen.
 function triggerConfetti() {
     if (typeof confetti === 'function') {
         confetti({
@@ -705,6 +798,13 @@ function triggerConfetti() {
     }
 }
 
+// Creates and shows a congratulations modal overlay after the user submits.
+// The modal shows the puzzle title and a custom congrats message.
+// It has three possible buttons:
+//   - "Next puzzle" → navigates to the next puzzle (or "Finish" if it's the last one)
+//   - "I want to know more" → (only shown if puzzle.trivia exists) flips the modal
+//     to show extra backstory/trivia about the puzzle topic, with its own Next button
+//   - "Close" → dismisses the modal without navigating away
 function showCongratsPopup(puzzle) {
     const modal = document.createElement('div');
     modal.style.cssText = `
@@ -721,7 +821,7 @@ function showCongratsPopup(puzzle) {
 </p>
         <div style="margin-top:12px;">
           <button id="modal-next" style="padding:8px 12px; cursor:pointer;">Next puzzle</button>
-          ${puzzle.trivia ? `<button id="modal-trivia" style="margin-left:10px; padding:8px 12px; cursor:pointer;">I want to know more</button>` : ''}
+          ${(puzzle.trivia || puzzle.triviaAccordion) ? `<button id="modal-trivia" style="margin-left:10px; padding:8px 12px; cursor:pointer;">I want to know more</button>` : ''}
           <button id="modal-close" style="margin-left:10px; padding:8px 12px; cursor:pointer;">Close</button>
         </div>
       </div>
@@ -733,33 +833,105 @@ function showCongratsPopup(puzzle) {
     document.getElementById('modal-close').addEventListener('click', () => {
         modal.remove();
     });
-    if (puzzle.trivia) {
-        document.getElementById('modal-trivia').addEventListener('click', () => {
-            const box = modal.querySelector('div');
-            box.innerHTML = `
-                <h2 style="margin:0 0 12px 0; color:${accent};">📖 Did you know?</h2>
-                <div style="color:#ddd; text-align:left; max-height:60vh; overflow-y:auto; line-height:1.7; font-size:15px;">
-                    ${puzzle.trivia}
-                </div>
-                <div style="margin-top:16px;">
-                    <button id="trivia-next" style="padding:8px 12px; cursor:pointer;">Next puzzle</button>
-                    <button id="trivia-close" style="margin-left:10px; padding:8px 12px; cursor:pointer;">Close</button>
-                </div>
-            `;
+    if (puzzle.trivia || puzzle.triviaAccordion) {
+    document.getElementById('modal-trivia').addEventListener('click', () => {
+    const box = modal.querySelector('div');
 
-            document.getElementById('trivia-close').addEventListener('click', () => modal.remove());
+    if (puzzle.triviaAccordion) {
+        // Accordion layout for puzzles with multiple stories
+        const accordionHTML = puzzle.triviaAccordion.map((item, index) => `
+            <div class="accordion-item" style="border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 4px;">
+                <button 
+                    class="accordion-toggle"
+                    data-index="${index}"
+                    style="
+                        width: 100%;
+                        text-align: left;
+                        background: none;
+                        border: none;
+                        color: ${accent};
+                        font-size: 14px;
+                        font-weight: bold;
+                        padding: 10px 0;
+                        cursor: pointer;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    "
+                >
+                    ${item.title}
+                    <span class="accordion-arrow" style="font-size:12px; transition: transform 0.2s;">▼</span>
+                </button>
+                <div 
+                    class="accordion-content"
+                    data-index="${index}"
+                    style="display:none; color:#ddd; font-size:14px; line-height:1.7; padding-bottom:10px;"
+                >
+                    ${item.content}
+                </div>
+            </div>
+        `).join('');
 
-            const triviaNext = document.getElementById('trivia-next');
-            if (puzzle.nextSlug === "end") {
-                triviaNext.textContent = "Finish";
-                triviaNext.addEventListener('click', () => setTimeout(() => window.location.href = "end.html", 220));
-            } else if (puzzle.nextSlug) {
-                triviaNext.addEventListener('click', () => setTimeout(() => window.location.href = `puzzle.html?slug=${puzzle.nextSlug}`, 220));
-            } else {
-                triviaNext.textContent = "Main menu";
-                triviaNext.addEventListener('click', () => setTimeout(() => window.location.href = "index.html", 220));
-            }
+        box.innerHTML = `
+            <h2 style="margin:0 0 16px 0; color:${accent};">${puzzle.triviaHeader || 'More about the story behind the puzzle...'}</h2>
+            <div style="max-height:60vh; overflow-y:auto; padding-right:4px;">
+                ${accordionHTML}
+            </div>
+            <div style="margin-top:16px;">
+                <button id="trivia-next" style="padding:8px 12px; cursor:pointer;">Next puzzle</button>
+                <button id="trivia-close" style="margin-left:10px; padding:8px 12px; cursor:pointer;">Close</button>
+            </div>
+        `;
+
+        // Wire up accordion toggles — only one open at a time
+        box.querySelectorAll('.accordion-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = btn.dataset.index;
+                const content = box.querySelector(`.accordion-content[data-index="${idx}"]`);
+                const arrow = btn.querySelector('.accordion-arrow');
+                const isOpen = content.style.display === 'block';
+
+                // Close all
+                box.querySelectorAll('.accordion-content').forEach(c => c.style.display = 'none');
+                box.querySelectorAll('.accordion-arrow').forEach(a => {
+                    a.style.transform = '';
+                });
+
+                // Open this one if it was closed
+                if (!isOpen) {
+                    content.style.display = 'block';
+                    arrow.style.transform = 'rotate(180deg)';
+                }
+            });
         });
+
+    } else {
+        // Default flat layout for all other puzzles
+        box.innerHTML = `
+            <h2 style="margin:0 0 12px 0; color:${accent};">${puzzle.triviaHeader || 'More about the story behind the puzzle...'}</h2>
+            <div style="color:#ddd; text-align:left; max-height:60vh; overflow-y:auto; line-height:1.7; font-size:15px;">
+                ${puzzle.trivia}
+            </div>
+            <div style="margin-top:16px;">
+                <button id="trivia-next" style="padding:8px 12px; cursor:pointer;">Next puzzle</button>
+                <button id="trivia-close" style="margin-left:10px; padding:8px 12px; cursor:pointer;">Close</button>
+            </div>
+        `;
+    }
+
+    document.getElementById('trivia-close').addEventListener('click', () => modal.remove());
+
+    const triviaNext = document.getElementById('trivia-next');
+    if (puzzle.nextSlug === "end") {
+        triviaNext.textContent = "Finish";
+        triviaNext.addEventListener('click', () => setTimeout(() => window.location.href = "end.html", 220));
+    } else if (puzzle.nextSlug) {
+        triviaNext.addEventListener('click', () => setTimeout(() => window.location.href = `puzzle.html?slug=${puzzle.nextSlug}`, 220));
+    } else {
+        triviaNext.textContent = "Main menu";
+        triviaNext.addEventListener('click', () => setTimeout(() => window.location.href = "index.html", 220));
+    }
+});
     }
 
     const nextBtn = document.getElementById('modal-next');
@@ -791,6 +963,9 @@ if (puzzle.nextSlug === "end") {
 
 /* ----------------- Loader: find puzzle by slug and initialize ----------------- */
 
+// Finds a puzzle in the global puzzles array by its slug string and loads it.
+// If no matching puzzle is found, it falls back to the first puzzle in the array.
+// Also sets a default accent color (#f5d37b) if the puzzle doesn't define one.
 function loadPuzzleBySlug(slug) {
     const puzzle = puzzles.find(p => p.slug === slug) || puzzles[0];
     if (!puzzle) {
@@ -805,12 +980,21 @@ function loadPuzzleBySlug(slug) {
 
 /* ----------------- Initialization ----------------- */
 
+// Entry point: runs as soon as the HTML page has finished loading.
+// Reads the ?slug= parameter from the URL and loads the matching puzzle.
+// If no slug is provided, loadPuzzleBySlug falls back to the first puzzle.
 // When DOM ready, load puzzle based on slug
 document.addEventListener('DOMContentLoaded', () => {
     const slug = getQueryParam('slug');
     loadPuzzleBySlug(slug);
 });
 
+// Re-renders the entire puzzle whenever the browser window is resized.
+// This is needed because the SVG connector lines are drawn using pixel coordinates
+// (getBoundingClientRect), which change when the layout reflows.
+// The resize is throttled — it waits 180ms after the last resize event fires
+// before re-drawing, to avoid thrashing during a drag resize.
+// Skips re-drawing if a modal popup is currently open (would wipe it).
 // Keep UI responsive: re-draw connectors on resize (throttled)
 let resizeTimer = null;
 window.addEventListener('resize', () => {
@@ -824,4 +1008,99 @@ window.addEventListener('resize', () => {
         const slug = getQueryParam('slug');
         loadPuzzleBySlug(slug);
     }, 180);
+});
+/* ----------------- Puzzle Sidebar ----------------- */
+
+// Builds the sidebar navigation list, showing all puzzles with links to each one.
+// Highlights the currently active puzzle, and marks any previously solved puzzles
+// (by checking localStorage for "solved:<slug>" entries set when the user submits).
+function buildSidebar() {
+    const list = document.getElementById('sidebar-list');
+    if (!list) return;
+
+    const currentSlug = getQueryParam('slug') || (puzzles[0] && puzzles[0].slug);
+
+    list.innerHTML = '';
+
+    puzzles.forEach((puzzle, index) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+
+        a.href = `puzzle.html?slug=${puzzle.slug}`;
+        a.textContent = `${index + 1}. ${puzzle.title}`;
+
+        if (puzzle.slug === currentSlug) {
+            a.classList.add('active');
+        }
+
+        if (localStorage.getItem('solved:' + puzzle.slug)) {
+            a.classList.add('solved');
+        }
+
+        li.appendChild(a);
+        list.appendChild(li);
+    });
+}
+
+// Toggles the sidebar open or closed by toggling CSS classes on
+// the sidebar panel, the dark overlay behind it, and the tab button.
+// All three elements need to sync so the open/close animation looks right.
+function toggleSidebar() {
+    const sidebar = document.getElementById('puzzle-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const tab = document.getElementById('sidebar-tab');
+
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+    tab.classList.toggle('open');
+}
+
+// Builds the sidebar as soon as the page DOM is ready.
+// Runs alongside the puzzle load listener (both listen to DOMContentLoaded).
+// Build sidebar on load
+document.addEventListener('DOMContentLoaded', () => {
+    buildSidebar();
+});
+
+/* ----------------- Feedback ----------------- */
+
+// Opens the feedback modal by adding the "open" CSS class to its overlay element.
+function openFeedback() {
+    document.getElementById('feedback-overlay').classList.add('open');
+}
+
+// Closes the feedback modal and resets the form fields (textarea and category dropdown)
+// back to their defaults, so the next time the user opens it, it's clean.
+function closeFeedback() {
+    document.getElementById('feedback-overlay').classList.remove('open');
+    document.getElementById('feedback-message').value = '';
+    document.getElementById('feedback-category').selectedIndex = 0;
+}
+
+// Sends the user's feedback by opening a mailto: link in their email client.
+// Reads the selected category and typed message, encodes them for URL safety,
+// and constructs a pre-filled email to the developer's address.
+// Shows an alert if the message is empty before sending.
+// Closes the feedback modal after triggering the email link.
+function sendFeedback() {
+    const category = document.getElementById('feedback-category').value;
+    const message = document.getElementById('feedback-message').value.trim();
+
+    if (!message) {
+        alert('Please write something before sending!');
+        return;
+    }
+
+    const subject = encodeURIComponent(`Puzzles from the Puranas — ${category}`);
+    const body = encodeURIComponent(message);
+    window.location.href = `mailto:krithika0628@gmail.com?subject=${subject}&body=${body}`;
+
+    closeFeedback();
+}
+
+// Closes the feedback modal when the user clicks outside the modal box
+// (i.e., directly on the dark overlay backdrop), for a standard UX dismiss behaviour.
+// Close feedback modal when clicking outside
+document.getElementById('feedback-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeFeedback();
 });

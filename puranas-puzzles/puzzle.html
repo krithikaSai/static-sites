@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
-    if (window.innerWidth < 768) {
+    if (window.innerWidth < 1200) {
       window.location.replace("mobile-unavailable.html");
     }
 </script>
@@ -14,13 +14,45 @@
 </head>
 
 <body>
+
+<!-- Sidebar toggle tab -->
+<div id="sidebar-tab" onclick="toggleSidebar()">&#9776;</div>
+
+<!-- Sidebar overlay -->
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<nav id="puzzle-sidebar">
+    <div id="sidebar-header">All Puzzles</div>
+    <ul id="sidebar-list"></ul>
+</nav>
 <div class="container">
 
     <h1 id="title"></h1>
     <p id="description" style="text-align:center; margin-top:-20px; margin-bottom:20px;"></p>
     <!-- dynamic flowchart goes here -->
     <div id="flowchart" class="flowchart"></div>
+<!-- Feedback button -->
+<button id="feedback-btn" onclick="openFeedback()">💬 Feedback</button>
 
+<!-- Feedback overlay -->
+<div id="feedback-overlay">
+    <div id="feedback-modal">
+        <h3>Share your thoughts</h3>
+        <p>Spotted an error? Have a suggestion? Just want to say something? I'd love to hear it.</p>
+        <select id="feedback-category">
+            <option value="Puzzle Content">Puzzle content</option>
+            <option value="UI & Design">UI & Design</option>
+            <option value="Suggestion">Suggestion</option>
+            <option value="Other">Other</option>
+        </select>
+        <textarea id="feedback-message" placeholder="Write your feedback here..."></textarea>
+        <div class="feedback-actions">
+            <button id="feedback-cancel" onclick="closeFeedback()">Cancel</button>
+            <button id="feedback-send" onclick="sendFeedback()">Send ✉️</button>
+        </div>
+    </div>
+</div>
 </div>
 
 <!-- scripts -->
