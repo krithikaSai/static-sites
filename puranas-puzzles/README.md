@@ -5,11 +5,11 @@ This is a passion project with 108 puzzles from the puranas. Each puzzle maps ou
 
 Link to the website - https://krithikasai.github.io/static-sites/puranas-puzzles/
 
-![Intro](https://raw.githubusercontent.com/krithikasai/static-sites/main/puranas-puzzles/img/intro.png)
+<img src="https://raw.githubusercontent.com/krithikasai/static-sites/main/puranas-puzzles/img/intro.png" width="500">
 
-![Solving](https://raw.githubusercontent.com/krithikasai/static-sites/main/puranas-puzzles/img/solving.png)
+<img src="https://raw.githubusercontent.com/krithikasai/static-sites/main/puranas-puzzles/img/solving.png" width="500">
 
-![Trivia](https://raw.githubusercontent.com/krithikasai/static-sites/main/puranas-puzzles/img/trivia.png)
+<img src="https://raw.githubusercontent.com/krithikasai/static-sites/main/puranas-puzzles/img/trivia.png" width="500">
 
 ## 📚 References Used To Build This Project
 
@@ -18,8 +18,8 @@ The stories and trivia in this project are drawn from the following books:
 - **Bala Bhagavatam** — Central Chinmaya Mission Trust
 - **Bala Ramayana** — Central Chinmaya Mission Trust
 - **Tarangini** — Central Chinmaya Mission Trust
-- **Mahabharatha Unravelled - Ami Ganatra**
-- **Ramayana Unravelled - Ami Ganatra**
+- **Mahabharatha Unravelled** - Ami Ganatra
+- **Ramayana Unravelled** - Ami Ganatra
 - **Unusual Tales from the Mahabharata** — Sudha Murthy
 - **Unusual Tales About Women in Mythology** — Sudha Murthy
 - **Unusual Tales About Rama and Krishna** — Sudha Murthy
