@@ -23,6 +23,6 @@ The stories and trivia in this project are drawn from the following books:
 - **Unusual Tales from the Mahabharata** — Sudha Murthy
 - **Unusual Tales About Women in Mythology** — Sudha Murthy
 - **Unusual Tales About Rama and Krishna** — Sudha Murthy
-- Amar Chitra Katha comics
-- Some lectures by Vinay Varanasi
+- **Amar Chitra Katha** comics
+- Some lectures by **Vinay Varanasi**
 
