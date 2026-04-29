@@ -1,60 +1,15 @@
 # Puzzles from the Puranas
 
-This is a passion project with 108 puzzles. Each puzzle maps out a web of characters, relationships, and events from different Puranas. Solve them, use hints when you're stuck, and read the story behind each puzzle once you're done.
-<!-- GIF: Intro -->
-![Intro](/static-sites/puranas-puzzles/gif/intro.gif)
-
-**▶ [Play it here](https://krithikasai.github.io/static-sites/puranas-puzzles/)**
-
----
-
-## How to Play
-
-### Solving a puzzle
-
-Each node in the flowchart contains a **letter pattern** showing you how many letters the answer has, **clue** describing who the character is or what they did, and a **Check** button to confirm whether your answer is correct. 
-
-<!-- GIF: solving a node — typing an answer and clicking Check -->
-![Intro](/static-sites/puranas-puzzles/gif/solving.gif)
-
----
-
-### Using hints
-
-If you're stuck, click the **Hint** button on any node. You can click it any number of times, it will reveal each alphabet of the answer one by one.
-
-<!-- GIF: clicking Hint a couple of times to reveal letters -->
-![Intro](/static-sites/puranas-puzzles/gif/hints.gif)
-
----
-
-###  Reading the story
-
-After solving all the nodes of a puzzle and submitting, you can either move on to the next puzzle, or click the **"I want to know more"** button if you wish to know the story in more depth.
-
-<!-- GIF: clicking "I want to know more" and scrolling through the story -->
-![Intro](/static-sites/puranas-puzzles/gif/trivia.gif)
-
----
-
-### Navigating between puzzles
-
-There's a **☰ tab** pinned to the left edge of the screen at all times. If you're not interested in solving all the puzzles, you can click on any one in the list to jump straight to it.
-
-<!-- GIF: opening the sidebar, scrolling through it, clicking a puzzle -->
-![Intro](/static-sites/puranas-puzzles/gif/navigation.gif)
-
----
-
-### Sending feedback
-
-There's a **💬 Feedback** button fixed to the bottom right corner of every page. You can use it to share any thoughts or feedback.
-
-<!-- GIF: clicking the feedback button, filling in the form, clicking Send -->
-![Intro](/static-sites/puranas-puzzles/gif/feedback.gif)
+This is a passion project with 108 puzzles from the puranas. Each puzzle maps out a web of characters, relationships, and events from different Puranas. Solve them, use hints when you're stuck, and read the story behind each puzzle once you're done.
 
 
----
+Link to the website - https://krithikasai.github.io/static-sites/puranas-puzzles/
+
+![Intro](https://raw.githubusercontent.com/krithikasai/static-sites/main/puranas-puzzles/img/intro.png)
+
+![Solving](https://raw.githubusercontent.com/krithikasai/static-sites/main/puranas-puzzles/img/solving.png)
+
+![Trivia](https://raw.githubusercontent.com/krithikasai/static-sites/main/puranas-puzzles/img/trivia.png)
 
 ## 📚 References Used To Build This Project
 
