@@ -1,10 +1,3 @@
-/* script.js
-   Replaces previous loadPuzzle with a dynamic grid+SVG flowchart generator,
-   while keeping your check/hint/fill logic intact and adding submit/confetti/navigation.
-*/
-
-/* ----------------- Existing logic (kept mostly unchanged) ----------------- */
-
 // Tracks how many hints have been used for each puzzle node.
 // Keys are node IDs, values are the count of hints revealed so far.
 const hintProgress = {}; // tracks how many hints used per node
@@ -874,8 +867,9 @@ function showCongratsPopup(puzzle) {
 
         box.innerHTML = `
             <h2 style="margin:0 0 16px 0; color:${accent};">${puzzle.triviaHeader || 'More about the story behind the puzzle...'}</h2>
-            <div style="max-height:60vh; overflow-y:auto; padding-right:4px;">
+             <div style="max-height:60vh; overflow-y:auto; padding-right:4px;">
                 ${accordionHTML}
+                ${puzzle.id !== 46 ? `<p style="margin-top:20px; font-size:12px; color:#888; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; font-style:italic;">The stories above have been paraphrased and lightly edited to focus on what's relevant to this puzzle. The content is not original — please refer to the sources cited within each section.</p>` : ''}
             </div>
             <div style="margin-top:16px;">
                 <button id="trivia-next" style="padding:8px 12px; cursor:pointer;">Next puzzle</button>
@@ -909,9 +903,11 @@ function showCongratsPopup(puzzle) {
         // Default flat layout for all other puzzles
         box.innerHTML = `
             <h2 style="margin:0 0 12px 0; color:${accent};">${puzzle.triviaHeader || 'More about the story behind the puzzle...'}</h2>
-            <div style="color:#ddd; text-align:left; max-height:60vh; overflow-y:auto; line-height:1.7; font-size:15px;">
-                ${puzzle.trivia}
-            </div>
+           
+        <div style="color:#ddd; text-align:left; max-height:60vh; overflow-y:auto; line-height:1.7; font-size:15px;">
+        ${puzzle.trivia}
+        ${puzzle.id !== 46 ? `<p style="margin-top:20px; font-size:12px; color:#888; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; font-style:italic;">(Disclaimer - The above content is not original and has been referred from the sources mentioned. The story has been paraphrased and lightly edited to focus on what's relevant to this puzzle.)</p>` : ''}
+        </div>
             <div style="margin-top:16px;">
                 <button id="trivia-next" style="padding:8px 12px; cursor:pointer;">Next puzzle</button>
                 <button id="trivia-close" style="margin-left:10px; padding:8px 12px; cursor:pointer;">Close</button>

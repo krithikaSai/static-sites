@@ -3743,7 +3743,7 @@ rowHeight: 320,
     {
       id: 8,
       pattern: "S_B___",
-      clue: "The other Rakshasa who was trying to impede the Yagna. The prince used Agneyastra on him and him and killed him.",
+      clue: "The other Rakshasa who was trying to impede the Yagna. The prince used Agneyastra on him and killed him.",
       answer: "SUBAHU"
     },
 
